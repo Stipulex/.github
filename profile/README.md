@@ -19,8 +19,9 @@ The defensible asset is the **data + engine + validation architecture**. AI mode
 > Contract intelligence. Not legal advice — just the most logical precursor to it.
 
 ---
+Updated &nbsp;·&nbsp; April 22, 2026
 
-## In Progress &nbsp;·&nbsp; April 22, 2026
+## In Progress 
 
 This update covers a significant infrastructure and accuracy sprint across the Stipulex engine. Changes span reliability, analysis correctness, performance, database architecture, and developer tooling.
 
