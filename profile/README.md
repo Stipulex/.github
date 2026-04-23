@@ -19,9 +19,47 @@ The defensible asset is the **data + engine + validation architecture**. AI mode
 > Contract intelligence. Not legal advice — just the most logical precursor to it.
 
 ---
-Updated &nbsp;·&nbsp; April 22, 2026
 
-## In Progress 
+## Engineering Standards
+
+Stipulex is built for the compliance requirements ahead — SOC 2 Type II, HIPAA BAA, and FedRAMP Moderate — without gold-plating controls the current phase doesn't need. Every architectural decision has a seam for the next requirement.
+
+**Infrastructure**
+- Distributed rate limiting via Redis sorted sets — sliding-window algorithm, atomic pipeline, shared across all server processes, survives restarts
+- Compliance data cached in Redis with 5-minute TTL — fail-open: Redis outage falls through to Postgres transparently, no analysis blocked
+- PDF reports rendered once and persisted as binary — zero re-render cost on subsequent access; backwards-compatible fallback for pre-cache records
+- Query performance tracked via `pg_stat_statements` — every query measured from day one, no instrumentation required at investigation time
+
+**Semantic Search**
+- 98 jurisdiction compliance rules embedded with 1536-dimensional vectors stored in Postgres via `pgvector`
+- Dual-path matching: keyword engine + vector similarity running in parallel, results merged — neither path removable without dropping recall
+- Paraphrased clause language caught by semantic similarity; standard legal language caught by keyword; both required
+
+**Observability**
+- Structured NDJSON logging throughout — PM2, Datadog, and CloudWatch compatible natively
+- PII and document content redacted at the serialization layer — `documentText`, `prompt`, `completion`, `apiKey`, `email`, `phone`, and all known-sensitive fields never appear in logs
+- All AI provider connections managed through a single central module — DPA enforcement, zero-training flags, vendor audit hooks, and failover all have one seam
+
+**Type Safety & Correctness**
+- TypeScript strict mode end-to-end — zero `any` suppressions, all hook dependency arrays explicit and correct
+- Zod runtime validation at every engine boundary — impossible states are unrepresentable
+- Boot-time environment validation — missing configuration surfaces as a single descriptive error at startup, not a cryptic crash mid-analysis
+- 90-second hard SLA enforced at the engine level
+
+**Stack**
+
+![Next.js](https://img.shields.io/badge/Next.js_16-black?style=flat-square&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript_5.5-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React_19-61DAFB?style=flat-square&logo=react&logoColor=black)
+![Postgres](https://img.shields.io/badge/PostgreSQL_16-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![pgvector](https://img.shields.io/badge/pgvector-semantic_search-4169E1?style=flat-square)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white)
+![Zod](https://img.shields.io/badge/Zod-3E67B1?style=flat-square&logo=zod&logoColor=white)
+![Drizzle](https://img.shields.io/badge/Drizzle_ORM-C5F74F?style=flat-square&logo=drizzle&logoColor=black)
+
+---
+
+## Changelog &nbsp;·&nbsp; Updated April 22, 2026
 
 This update covers a significant infrastructure and accuracy sprint across the Stipulex engine. Changes span reliability, analysis correctness, performance, database architecture, and developer tooling.
 
