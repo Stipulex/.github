@@ -58,6 +58,9 @@ Stipulex is built for the compliance requirements ahead — SOC 2 Type II, HIPAA
 ![Drizzle](https://img.shields.io/badge/Drizzle_ORM-C5F74F?style=flat-square&logo=drizzle&logoColor=black)
 
 ---
+## Changelog &nbsp;·&nbsp; Updated April 23, 2026
+Migrated TypeScript from 5.5 to 6.0.45
+---
 
 ## Changelog &nbsp;·&nbsp; Updated April 22, 2026
 
