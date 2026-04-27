@@ -12,9 +12,7 @@
 
 ## What We Build
 
-Stipulex is a contract intelligence engine — not an AI tool. It combines a proprietary jurisdiction compliance database, a deterministic cross-reference engine, and multi-model AI analysis to surface risk flags, a proprietary Fairness Score, and a plain-English executive intelligence brief in under 90 seconds.
-
-AI models are one input — validated and cross-checked against curated statutory and regulatory data covering California and Federal jurisdictions at launch, expanding to all 50 states.
+Stipulex is a contract intelligence engine — not an AI tool. It combines a proprietary jurisdiction compliance database, a deterministic cross-reference engine, and multi-model AI analysis to surface risk flags, a Fairness Score, and a plain-English executive intelligence brief in under 90 seconds.
 
 > Contract intelligence. Not legal advice — just the most logical precursor to it.
 
@@ -22,7 +20,7 @@ AI models are one input — validated and cross-checked against curated statutor
 
 ## Engineering Standards
 
-Stipulex is built for the compliance requirements ahead — SOC 2 Type II, HIPAA BAA, and FedRAMP Moderate — without gold-plating controls the current phase doesn't need. Every architectural decision has a seam for the next requirement.
+Stipulex is built with the compliance requirements ahead in mind — without gold-plating controls the current phase doesn't need. Every architectural decision has a seam for the next requirement.
 
 **Infrastructure**
 - Distributed rate limiting via Redis — shared across all server processes, survives restarts
@@ -87,18 +85,13 @@ Replaced a third-party auth library (removed due to a CVE in its dependency tree
 - Schema extended to support user accounts, authentication tokens, invite codes, and onboarding profiles
 - All analyses now carry a user foreign key — no orphaned records
 - Legacy schema artifacts dropped; database fully migrated on VPS
-
----
-
-### Security Audit &nbsp;·&nbsp; [PR #22](https://github.com/Stipulex/stipulex-demo/issues/22)
-
-A comprehensive internal security audit was completed prior to public access. All findings were resolved before launch.
-
 ---
 
 ## Changelog &nbsp;·&nbsp; April 22, 2026
 
 This update covers a significant infrastructure and accuracy sprint across the Stipulex engine. Changes span reliability, analysis correctness, performance, database architecture, and developer tooling.
+
+A comprehensive internal security audit was completed prior to public access. All findings were resolved before launch.
 
 ---
 
