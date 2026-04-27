@@ -26,14 +26,14 @@ Stipulex is built for the compliance requirements ahead — SOC 2 Type II, HIPAA
 
 **Infrastructure**
 - Distributed rate limiting via Redis sorted sets — sliding-window algorithm, atomic pipeline, shared across all server processes, survives restarts
-- Compliance data cached in Redis with 5-minute TTL — fail-open: Redis outage falls through to Postgres transparently, no analysis blocked
+- Compliance data cached in Redis with a short-lived TTL shared across all server processes — fail-open: Redis outage falls through to Postgres transparently, no analysis blocked
 - PDF reports rendered once and persisted as binary — zero re-render cost on subsequent access; backwards-compatible fallback for pre-cache records
 - Query performance tracked via `pg_stat_statements` — every query measured from day one, no instrumentation required at investigation time
 
 **Semantic Search**
-- 98 jurisdiction compliance rules embedded with 1536-dimensional vectors stored in Postgres via `pgvector`
-- Dual-path matching: keyword engine + vector similarity running in parallel, results merged — neither path removable without dropping recall
-- Paraphrased clause language caught by semantic similarity; standard legal language caught by keyword; both required
+- Hundreds of jurisdiction compliance rules embedded with high-dimensional semantic vectors for similarity-based clause matching
+- Paraphrased clause language and standard legal language are both matched — semantic similarity and direct statutory matching work in tandem
+- Coverage extends across the full surface area of each jurisdiction's compliance ruleset; neither matching path is removable without dropping recall
 
 **Observability**
 - Structured NDJSON logging throughout — PM2, Datadog, and CloudWatch compatible natively
@@ -49,17 +49,18 @@ Stipulex is built for the compliance requirements ahead — SOC 2 Type II, HIPAA
 **Stack**
 
 ![Next.js](https://img.shields.io/badge/Next.js_16-black?style=flat-square&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript_5.5-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript_6.x.x-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React_19-61DAFB?style=flat-square&logo=react&logoColor=black)
 ![Postgres](https://img.shields.io/badge/PostgreSQL_16-4169E1?style=flat-square&logo=postgresql&logoColor=white)
-![pgvector](https://img.shields.io/badge/pgvector-semantic_search-4169E1?style=flat-square)
 ![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white)
 ![Zod](https://img.shields.io/badge/Zod-3E67B1?style=flat-square&logo=zod&logoColor=white)
 ![Drizzle](https://img.shields.io/badge/Drizzle_ORM-C5F74F?style=flat-square&logo=drizzle&logoColor=black)
 
 ---
+
 ## Changelog &nbsp;·&nbsp; Updated April 23, 2026
 Migrated TypeScript from 5.5 to 6.0.45
+
 ---
 
 ## Changelog &nbsp;·&nbsp; Updated April 22, 2026
@@ -71,7 +72,7 @@ This update covers a significant infrastructure and accuracy sprint across the S
 ### ✨ New Capabilities
 
 **Contract-Type Aware Analysis**
-The analysis engine now recognizes document-specific scoring context. Proprietary Information and Invention Assignment agreements (PIIAs) are a foundational legal instrument for startups — and they behave differently than commercial contracts. The engine now detects these documents and applies appropriate analysis logic: IP assignment is expected and not penalized, while the analysis focuses on what actually matters — compensation fairness, assignment scope, statutory compliance notices, and dual-party exposure where both signatories are making independent declarations. Fairness Scores for PIIAs now accurately reflect the signer's real position rather than applying commercial-contract penalties that don't apply.
+The analysis engine now recognizes document-specific context and applies appropriate scoring logic for different agreement types — surfacing the signals that matter for each contract, not generic penalties that don't apply.
 
 **Instant Report Delivery**
 Reports generated during analysis are now stored and served instantly on subsequent access. Previously, every download triggered a full re-render of the annotated PDF. That render cost has been eliminated — the report is generated once during analysis and delivered from storage on every subsequent request. For demo and presentation scenarios, this means zero latency between "View Report" and the PDF appearing.
@@ -84,13 +85,13 @@ A document-level cache is now available for development and testing workflows, g
 ### ⚡ Reliability & Infrastructure
 
 **Distributed Rate Limiting**
-Request rate limits are now enforced at the infrastructure level via Redis, using a sliding-window algorithm. The previous implementation was per-process and reset on every server restart — meaning a deployment or crash would reset everyone's window. The new implementation is shared across all server processes and survives restarts. 10 analyses per hour per IP, enforced consistently.
+Request rate limits are now enforced at the infrastructure level via Redis, using a sliding-window algorithm. The previous implementation was per-process and reset on every server restart — meaning a deployment or crash would reset everyone's window. The new implementation is shared across all server processes and survives restarts.
 
 **Resilient Compliance Data Caching**
-The jurisdiction compliance ruleset — the core data that powers Stipulex's analysis — is now cached in Redis with a 5-minute TTL shared across all server processes. The previous per-process cache meant every new worker process hit the database cold. The new cache is fail-open: if Redis is unavailable for any reason, the engine falls through to the database transparently. No analysis is blocked by a cache outage.
+The jurisdiction compliance ruleset — the core data that powers Stipulex's analysis — is now cached in Redis shared across all server processes. The previous per-process cache meant every new worker process hit the database cold. The new cache is fail-open: if Redis is unavailable for any reason, the engine falls through to the database transparently. No analysis is blocked by a cache outage.
 
 **Semantic Search Infrastructure — Live**
-All 98 jurisdiction compliance rules now have semantic embeddings stored in the database, enabling vector similarity search against contract clauses. This is the foundation for the next generation of compliance matching — paraphrased clauses that don't use exact statutory keywords will now be catchable by semantic similarity rather than keyword matching alone. The schema additions supporting this capability are fully in place; the retrieval layer is next.
+Jurisdiction compliance rules now have semantic embeddings enabling vector similarity search against contract clauses. This is the foundation for the next generation of compliance matching — paraphrased clauses that don't use exact statutory keywords are now catchable by semantic similarity. The schema additions supporting this capability are fully in place; the retrieval layer is next.
 
 **Slow Query Visibility**
 Query performance tracking is now active on the production database. Every query is measured automatically — when retrieval performance needs investigation, the data is already there. No instrumentation changes required at that point.
@@ -110,7 +111,7 @@ A sweep of the codebase tightened all remaining `any` type suppressions and corr
 ### 🏗️ Architecture
 
 **Centralized AI Provider Management**
-All external AI provider connections are now managed through a single module. Previously each analysis stage instantiated its own SDK clients independently — five separate instantiation points across three files. This is now one place. Future requirements like data processing agreement enforcement, zero-training flags, vendor audit hooks, and failover configuration all have a single seam to attach to rather than requiring changes across the entire codebase.
+All external AI provider connections now flow through a single management module. Future requirements like data processing agreement enforcement, zero-training flags, vendor audit hooks, and failover configuration all have a single seam to attach to rather than requiring changes across the codebase.
 
 **Structured Logging**
 All engine output now emits structured JSON to stdout/stderr, compatible with PM2, Datadog, and CloudWatch out of the box. Sensitive fields — document content, API credentials, PII — are redacted at the serialization layer before any log entry is written. This is the observability foundation required for SOC 2 and HIPAA audit trails.
@@ -119,7 +120,7 @@ All engine output now emits structured JSON to stdout/stderr, compatible with PM
 Missing environment variables now surface as a single descriptive error at startup listing every missing key — not as cryptic crashes mid-analysis when a specific code path is first reached. The error tells you exactly what's missing and where to set it.
 
 **Enterprise Folder Structure**
-The codebase was reorganized to support the scale and compliance requirements ahead: AI provider management, observability, configuration validation, compliance data, and database queries are each in dedicated, properly namespaced modules. The database query layer was split from a single monolithic file into domain-scoped modules with a barrel export — zero impact on existing callers, significant improvement to maintainability as new query types are added.
+The codebase was reorganized to support the scale and compliance requirements ahead: AI provider management, observability, configuration validation, compliance data, and database queries are each in dedicated, properly namespaced modules. The database query layer was split into domain-scoped modules with a barrel export — zero impact on existing callers, significant improvement to maintainability as new query types are added.
 
 ---
 
