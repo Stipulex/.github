@@ -64,7 +64,7 @@ Stipulex is built with the compliance requirements ahead in mind — without gol
 
 ## Changelog &nbsp;·&nbsp; April 23, 2026
 
-### TypeScript 6.0.3 + Authentication System &nbsp;·&nbsp; [PR #21](https://github.com/Stipulex/stipulex-demo/issues/21)
+### TypeScript 6.0.3 + Authentication System 
 
 **TypeScript 6.0.3 Upgrade**
 - Migrated from TypeScript 5.5 to 6.0.3
