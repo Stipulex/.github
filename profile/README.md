@@ -25,19 +25,25 @@ The defensible asset is the **data + engine + validation architecture**. AI mode
 Stipulex is built for the compliance requirements ahead — SOC 2 Type II, HIPAA BAA, and FedRAMP Moderate — without gold-plating controls the current phase doesn't need. Every architectural decision has a seam for the next requirement.
 
 **Infrastructure**
-- Distributed rate limiting via Redis sorted sets — sliding-window algorithm, atomic pipeline, shared across all server processes, survives restarts
+- Distributed rate limiting via Redis — shared across all server processes, survives restarts
 - Compliance data cached in Redis with a short-lived TTL shared across all server processes — fail-open: Redis outage falls through to Postgres transparently, no analysis blocked
 - PDF reports rendered once and persisted as binary — zero re-render cost on subsequent access; backwards-compatible fallback for pre-cache records
 - Query performance tracked via `pg_stat_statements` — every query measured from day one, no instrumentation required at investigation time
 
 **Semantic Search**
-- Hundreds of jurisdiction compliance rules embedded with high-dimensional semantic vectors for similarity-based clause matching
+- Hundreds of jurisdiction compliance rules with high-dimensional semantic embeddings for similarity-based clause matching
 - Paraphrased clause language and standard legal language are both matched — semantic similarity and direct statutory matching work in tandem
-- Coverage extends across the full surface area of each jurisdiction's compliance ruleset; neither matching path is removable without dropping recall
+
+**Authentication**
+- Full in-house authentication stack — no third-party auth library dependencies
+- Industry-standard password hashing, one-time token flows, and server-side session management
+- Role-based rate limiting tied to account identity, not IP alone
+- Brute-force protection across all credential endpoints
+- Email-driven account setup, recovery, and admin invite flows
 
 **Observability**
 - Structured NDJSON logging throughout — PM2, Datadog, and CloudWatch compatible natively
-- PII and document content redacted at the serialization layer — `documentText`, `prompt`, `completion`, `apiKey`, `email`, `phone`, and all known-sensitive fields never appear in logs
+- PII and document content redacted at the serialization layer — sensitive fields never appear in logs
 - All AI provider connections managed through a single central module — DPA enforcement, zero-training flags, vendor audit hooks, and failover all have one seam
 
 **Type Safety & Correctness**
@@ -49,7 +55,7 @@ Stipulex is built for the compliance requirements ahead — SOC 2 Type II, HIPAA
 **Stack**
 
 ![Next.js](https://img.shields.io/badge/Next.js_16-black?style=flat-square&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript_6.x.x-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript_6.0.3-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React_19-61DAFB?style=flat-square&logo=react&logoColor=black)
 ![Postgres](https://img.shields.io/badge/PostgreSQL_16-4169E1?style=flat-square&logo=postgresql&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white)
@@ -58,12 +64,56 @@ Stipulex is built for the compliance requirements ahead — SOC 2 Type II, HIPAA
 
 ---
 
-## Changelog &nbsp;·&nbsp; Updated April 23, 2026
-Migrated TypeScript from 5.5 to 6.0.45
+## Changelog &nbsp;·&nbsp; April 23, 2026
+
+### TypeScript 6.0.3 + Authentication System &nbsp;·&nbsp; [PR #21](https://github.com/Stipulex/stipulex-demo/issues/21)
+
+**TypeScript 6.0.3 Upgrade**
+- Migrated from TypeScript 5.5 to 6.0.3
+- Patched open CVEs in transitive dependencies
+- Resolved all Next.js 16 compatibility requirements — middleware conventions, edge runtime compatibility, and build configuration updated to match current framework contracts
+
+**Authentication System**
+
+Replaced a third-party auth library (removed due to a CVE in its dependency tree) with a purpose-built authentication stack designed for Stipulex's compliance posture from the ground up.
+
+- **Credential management:** Industry-standard password hashing; one-time tokens for account setup and password recovery; tokens are single-use and expire
+- **Sessions:** JWT-based with Redis backing — sessions are server-side invalidatable on logout; algorithm and scope pinned
+- **Rate limiting:** Per-identity enforcement tied to account tier, not IP alone; brute-force protection active on all credential endpoints
+- **Account flows:** Registration (invite-gated), set-password, login, logout, forgot-password, reset-password, admin setup, and account suspension
+- **Admin visibility:** Usage dashboard for account-level activity
+
+**Database**
+- Schema extended to support user accounts, authentication tokens, invite codes, and LOI profiles
+- All analyses now carry a user foreign key — no orphaned records
+- Legacy schema artifacts dropped; database fully migrated on VPS
 
 ---
 
-## Changelog &nbsp;·&nbsp; Updated April 22, 2026
+### Security Audit — 19 Findings Resolved &nbsp;·&nbsp; [PR #22](https://github.com/Stipulex/stipulex-demo/issues/22)
+
+A comprehensive internal security audit was completed before public access is opened. All HIGH and MEDIUM severity findings are resolved.
+
+| Severity | Finding | Status |
+|----------|---------|--------|
+| HIGH | Authorization controls on analysis and report access — ownership enforced at the API layer | ✅ Resolved |
+| HIGH | Contract content redacted from server-sent event streams | ✅ Resolved |
+| HIGH | Analysis endpoint requires authentication — no unauthenticated access | ✅ Resolved |
+| HIGH | Rate limiting hardened against IP spoofing via proxy headers | ✅ Resolved |
+| HIGH | Session hardening — algorithm pinned, scope enforced, per-user index | ✅ Resolved |
+| MEDIUM | Error messages sanitized — internal details no longer surface in API responses | ✅ Resolved |
+| MEDIUM | Password input length bounded — prevents algorithmic DoS on credential endpoints | ✅ Resolved |
+| MEDIUM | Email template output sanitized against XSS | ✅ Resolved |
+| MEDIUM | Login query scoped — no column over-fetch | ✅ Resolved |
+| MEDIUM | File uploads validated by magic bytes — PDF and DOCX enforced at the byte level | ✅ Resolved |
+| MEDIUM | Redis error handling hardened in rate-limiter | ✅ Resolved |
+| MEDIUM | IP rate limiting applied to password set and reset endpoints | ✅ Resolved |
+| LOW | Auth secret entropy, rate-limiter edge cases, Redis key isolation | ✅ Resolved |
+| DEFERRED | One finding scoped to next release — not exploitable in current access-controlled state | ⏸ Next release |
+
+---
+
+## Changelog &nbsp;·&nbsp; April 22, 2026
 
 This update covers a significant infrastructure and accuracy sprint across the Stipulex engine. Changes span reliability, analysis correctness, performance, database architecture, and developer tooling.
 
@@ -78,49 +128,49 @@ The analysis engine now recognizes document-specific context and applies appropr
 Reports generated during analysis are now stored and served instantly on subsequent access. Previously, every download triggered a full re-render of the annotated PDF. That render cost has been eliminated — the report is generated once during analysis and delivered from storage on every subsequent request. For demo and presentation scenarios, this means zero latency between "View Report" and the PDF appearing.
 
 **Analysis Cache with Configurable Retention**
-A document-level cache is now available for development and testing workflows, gated behind an explicit configuration flag that is off by default in all demo and production environments. This preserves Stipulex's zero-retention posture for live use while giving engineers a fast inner loop during development — re-running the same contract skips API costs without affecting the demo experience.
+A document-level cache is available for development and testing workflows, gated behind an explicit configuration flag that is off by default in all demo and production environments. This preserves Stipulex's zero-retention posture for live use while giving engineers a fast inner loop during development.
 
 ---
 
 ### ⚡ Reliability & Infrastructure
 
 **Distributed Rate Limiting**
-Request rate limits are now enforced at the infrastructure level via Redis, using a sliding-window algorithm. The previous implementation was per-process and reset on every server restart — meaning a deployment or crash would reset everyone's window. The new implementation is shared across all server processes and survives restarts.
+Request rate limits are now enforced at the infrastructure level via Redis. The previous implementation was per-process and reset on every server restart — meaning a deployment or crash would reset everyone's window. The new implementation is shared across all server processes and survives restarts.
 
 **Resilient Compliance Data Caching**
-The jurisdiction compliance ruleset — the core data that powers Stipulex's analysis — is now cached in Redis shared across all server processes. The previous per-process cache meant every new worker process hit the database cold. The new cache is fail-open: if Redis is unavailable for any reason, the engine falls through to the database transparently. No analysis is blocked by a cache outage.
+The jurisdiction compliance ruleset is now cached in Redis shared across all server processes. The previous per-process cache meant every new worker process hit the database cold. The new cache is fail-open: if Redis is unavailable, the engine falls through to the database transparently. No analysis is blocked by a cache outage.
 
 **Semantic Search Infrastructure — Live**
-Jurisdiction compliance rules now have semantic embeddings enabling vector similarity search against contract clauses. This is the foundation for the next generation of compliance matching — paraphrased clauses that don't use exact statutory keywords are now catchable by semantic similarity. The schema additions supporting this capability are fully in place; the retrieval layer is next.
+Jurisdiction compliance rules now have semantic embeddings enabling vector similarity search against contract clauses — paraphrased clauses that don't use exact statutory keywords are now catchable by semantic similarity.
 
 **Slow Query Visibility**
-Query performance tracking is now active on the production database. Every query is measured automatically — when retrieval performance needs investigation, the data is already there. No instrumentation changes required at that point.
+Query performance tracking is now active. Every query is measured automatically — when retrieval performance needs investigation, the data is already there.
 
 ---
 
 ### 🔧 Fixes
 
 **Development Tooling — Database CLI**
-Database schema management commands were silently failing in terminal sessions because the CLI tool doesn't inherit shell environment variables. Fixed by explicitly loading the environment file at configuration time — `db:push`, `db:generate`, and `db:studio` now work correctly from any terminal without manual setup steps.
+Database schema management commands were silently failing in terminal sessions. Fixed by explicitly loading the environment file at configuration time — `db:push`, `db:generate`, and `db:studio` now work correctly from any terminal without manual setup steps.
 
 **TypeScript Strict Mode — Audit Pass**
-A sweep of the codebase tightened all remaining `any` type suppressions and corrected React hook dependency arrays that were causing unnecessary re-renders in the PDF viewer component. ESLint suppression comments were removed; all hooks now declare explicit, correct dependency arrays.
+Tightened remaining `any` type suppressions and corrected React hook dependency arrays causing unnecessary re-renders in the PDF viewer. All hooks now declare explicit, correct dependency arrays.
 
 ---
 
 ### 🏗️ Architecture
 
 **Centralized AI Provider Management**
-All external AI provider connections now flow through a single management module. Future requirements like data processing agreement enforcement, zero-training flags, vendor audit hooks, and failover configuration all have a single seam to attach to rather than requiring changes across the codebase.
+All external AI provider connections now flow through a single management module. Data processing agreement enforcement, zero-training flags, vendor audit hooks, and failover configuration all have one seam.
 
 **Structured Logging**
-All engine output now emits structured JSON to stdout/stderr, compatible with PM2, Datadog, and CloudWatch out of the box. Sensitive fields — document content, API credentials, PII — are redacted at the serialization layer before any log entry is written. This is the observability foundation required for SOC 2 and HIPAA audit trails.
+All engine output now emits structured JSON to stdout/stderr, compatible with PM2, Datadog, and CloudWatch out of the box. Sensitive fields are redacted at the serialization layer before any log entry is written.
 
 **Boot-Time Environment Validation**
-Missing environment variables now surface as a single descriptive error at startup listing every missing key — not as cryptic crashes mid-analysis when a specific code path is first reached. The error tells you exactly what's missing and where to set it.
+Missing environment variables now surface as a single descriptive error at startup listing every missing key — not as cryptic crashes mid-analysis.
 
 **Enterprise Folder Structure**
-The codebase was reorganized to support the scale and compliance requirements ahead: AI provider management, observability, configuration validation, compliance data, and database queries are each in dedicated, properly namespaced modules. The database query layer was split into domain-scoped modules with a barrel export — zero impact on existing callers, significant improvement to maintainability as new query types are added.
+AI provider management, observability, configuration validation, compliance data, and database queries are each in dedicated, properly namespaced modules. The database query layer was split into domain-scoped modules with a barrel export — zero impact on existing callers.
 
 ---
 
