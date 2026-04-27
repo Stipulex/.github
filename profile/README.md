@@ -85,14 +85,15 @@ Replaced a third-party auth library (removed due to a CVE in its dependency tree
 - Schema extended to support user accounts, authentication tokens, invite codes, and onboarding profiles
 - All analyses now carry a user foreign key — no orphaned records
 - Legacy schema artifacts dropped; database fully migrated on VPS
+
 ---
+
 
 ## Changelog &nbsp;·&nbsp; April 22, 2026
 
 This update covers a significant infrastructure and accuracy sprint across the Stipulex engine. Changes span reliability, analysis correctness, performance, database architecture, and developer tooling.
 
-A comprehensive internal security audit was completed prior to public access. All findings were resolved before launch.
-
+A comprehensive internal security audit was completed prior to public access. All findings were resolved before launch
 ---
 
 ### New Capabilities
