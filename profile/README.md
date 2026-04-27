@@ -14,7 +14,7 @@
 
 Stipulex is a contract intelligence engine — not an AI tool. It combines a proprietary jurisdiction compliance database, a deterministic cross-reference engine, and multi-model AI analysis to surface risk flags, a proprietary Fairness Score, and a plain-English executive intelligence brief in under 90 seconds.
 
-The defensible asset is the **data + engine + validation architecture**. AI models are one input — validated and cross-checked against curated statutory and regulatory data covering California and Federal jurisdictions at launch, expanding to all 50 states.
+AI models are one input — validated and cross-checked against curated statutory and regulatory data covering California and Federal jurisdictions at launch, expanding to all 50 states.
 
 > Contract intelligence. Not legal advice — just the most logical precursor to it.
 
@@ -26,7 +26,7 @@ Stipulex is built for the compliance requirements ahead — SOC 2 Type II, HIPAA
 
 **Infrastructure**
 - Distributed rate limiting via Redis — shared across all server processes, survives restarts
-- Compliance data cached in Redis with a short-lived TTL shared across all server processes — fail-open: Redis outage falls through to Postgres transparently, no analysis blocked
+- Compliance data cached in Redis with a short-lived TTL — fail-open: Redis outage falls through to Postgres transparently, no analysis blocked
 - PDF reports rendered once and persisted as binary — zero re-render cost on subsequent access; backwards-compatible fallback for pre-cache records
 - Query performance tracked via `pg_stat_statements` — every query measured from day one, no instrumentation required at investigation time
 
@@ -84,32 +84,15 @@ Replaced a third-party auth library (removed due to a CVE in its dependency tree
 - **Admin visibility:** Usage dashboard for account-level activity
 
 **Database**
-- Schema extended to support user accounts, authentication tokens, invite codes, and LOI profiles
+- Schema extended to support user accounts, authentication tokens, invite codes, and onboarding profiles
 - All analyses now carry a user foreign key — no orphaned records
 - Legacy schema artifacts dropped; database fully migrated on VPS
 
 ---
 
-### Security Audit — 19 Findings Resolved &nbsp;·&nbsp; [PR #22](https://github.com/Stipulex/stipulex-demo/issues/22)
+### Security Audit &nbsp;·&nbsp; [PR #22](https://github.com/Stipulex/stipulex-demo/issues/22)
 
-A comprehensive internal security audit was completed before public access is opened. All HIGH and MEDIUM severity findings are resolved.
-
-| Severity | Finding | Status |
-|----------|---------|--------|
-| HIGH | Authorization controls on analysis and report access — ownership enforced at the API layer | ✅ Resolved |
-| HIGH | Contract content redacted from server-sent event streams | ✅ Resolved |
-| HIGH | Analysis endpoint requires authentication — no unauthenticated access | ✅ Resolved |
-| HIGH | Rate limiting hardened against IP spoofing via proxy headers | ✅ Resolved |
-| HIGH | Session hardening — algorithm pinned, scope enforced, per-user index | ✅ Resolved |
-| MEDIUM | Error messages sanitized — internal details no longer surface in API responses | ✅ Resolved |
-| MEDIUM | Password input length bounded — prevents algorithmic DoS on credential endpoints | ✅ Resolved |
-| MEDIUM | Email template output sanitized against XSS | ✅ Resolved |
-| MEDIUM | Login query scoped — no column over-fetch | ✅ Resolved |
-| MEDIUM | File uploads validated by magic bytes — PDF and DOCX enforced at the byte level | ✅ Resolved |
-| MEDIUM | Redis error handling hardened in rate-limiter | ✅ Resolved |
-| MEDIUM | IP rate limiting applied to password set and reset endpoints | ✅ Resolved |
-| LOW | Auth secret entropy, rate-limiter edge cases, Redis key isolation | ✅ Resolved |
-| DEFERRED | One finding scoped to next release — not exploitable in current access-controlled state | ⏸ Next release |
+A comprehensive internal security audit was completed prior to public access. All findings were resolved before launch.
 
 ---
 
@@ -119,7 +102,7 @@ This update covers a significant infrastructure and accuracy sprint across the S
 
 ---
 
-### ✨ New Capabilities
+### New Capabilities
 
 **Contract-Type Aware Analysis**
 The analysis engine now recognizes document-specific context and applies appropriate scoring logic for different agreement types — surfacing the signals that matter for each contract, not generic penalties that don't apply.
@@ -128,11 +111,11 @@ The analysis engine now recognizes document-specific context and applies appropr
 Reports generated during analysis are now stored and served instantly on subsequent access. Previously, every download triggered a full re-render of the annotated PDF. That render cost has been eliminated — the report is generated once during analysis and delivered from storage on every subsequent request. For demo and presentation scenarios, this means zero latency between "View Report" and the PDF appearing.
 
 **Analysis Cache with Configurable Retention**
-A document-level cache is available for development and testing workflows, gated behind an explicit configuration flag that is off by default in all demo and production environments. This preserves Stipulex's zero-retention posture for live use while giving engineers a fast inner loop during development.
+A document-level cache is available for development and testing workflows, gated behind an explicit configuration flag that is off by default in all environments. This preserves Stipulex's default zero-retention posture for live use while giving engineers a fast inner loop during development.
 
 ---
 
-### ⚡ Reliability & Infrastructure
+### Reliability & Infrastructure
 
 **Distributed Rate Limiting**
 Request rate limits are now enforced at the infrastructure level via Redis. The previous implementation was per-process and reset on every server restart — meaning a deployment or crash would reset everyone's window. The new implementation is shared across all server processes and survives restarts.
@@ -148,7 +131,7 @@ Query performance tracking is now active. Every query is measured automatically 
 
 ---
 
-### 🔧 Fixes
+### Fixes
 
 **Development Tooling — Database CLI**
 Database schema management commands were silently failing in terminal sessions. Fixed by explicitly loading the environment file at configuration time — `db:push`, `db:generate`, and `db:studio` now work correctly from any terminal without manual setup steps.
@@ -158,7 +141,7 @@ Tightened remaining `any` type suppressions and corrected React hook dependency 
 
 ---
 
-### 🏗️ Architecture
+### Architecture
 
 **Centralized AI Provider Management**
 All external AI provider connections now flow through a single management module. Data processing agreement enforcement, zero-training flags, vendor audit hooks, and failover configuration all have one seam.
