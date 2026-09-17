@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 540" width="1800" height="540" role="img" aria-label="Stipulex. Stipulate with Certainty. Know exactly what you're agreeing to, before you sign.">
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.6" fill="#CBD5E1" opacity="0.55"/>
+    </pattern>
+    <linearGradient id="accent" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="gauge" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#EF4444"/>
+      <stop offset="0.5" stop-color="#F59E0B"/>
+      <stop offset="1" stop-color="#22C55E"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="1" stop-color="#E2E8F0" stop-opacity="0.9"/>
+    </linearGradient>
+    <clipPath id="card">
+      <rect x="4" y="4" width="1792" height="532" rx="14"/>
+    </clipPath>
+  </defs>
+
+  <!-- card -->
+  <rect x="4" y="4" width="1792" height="532" rx="14" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="2"/>
+  <rect x="4" y="4" width="1792" height="532" rx="14" fill="url(#dots)"/>
+  <g clip-path="url(#card)">
+    <rect x="1300" y="4" width="496" height="532" fill="url(#panel)"/>
+    <rect x="4" y="4" width="10" height="532" fill="url(#accent)"/>
+  </g>
+
+  <!-- wordmark -->
+  <rect x="88" y="110" width="26" height="26" rx="5" fill="#2563EB"/>
+  <text x="132" y="196" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="128" font-weight="800" letter-spacing="10" fill="#0F172A">STIPULEX</text>
+
+  <!-- slogan / tagline / subtitle -->
+  <text x="90" y="284" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="50" font-weight="700" fill="#1E293B">Stipulate with Certainty.</text>
+  <text x="90" y="340" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="30" font-weight="500" fill="#334155">Know exactly what you’re agreeing to — before you sign.</text>
+  <text x="90" y="384" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" fill="#64748B">Contract intelligence within minutes — not legal advice, the logical precursor to it.</text>
+
+  <!-- pills -->
+  <g font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#2563EB">
+    <rect x="90" y="424" width="228" height="52" rx="26" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="2"/>
+    <text x="204" y="458" text-anchor="middle">Fairness Score</text>
+    <rect x="336" y="424" width="176" height="52" rx="26" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="2"/>
+    <text x="424" y="458" text-anchor="middle">Risk Flags</text>
+    <rect x="530" y="424" width="300" height="52" rx="26" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="2"/>
+    <text x="680" y="458" text-anchor="middle">Compliance Intelligence</text>
+  </g>
+
+  <!-- gauge -->
+  <g transform="translate(1530 320)">
+    <path d="M -150 0 A 150 150 0 0 1 150 0" fill="none" stroke="#E2E8F0" stroke-width="22" stroke-linecap="round"/>
+    <path d="M -150 0 A 150 150 0 0 1 115.6 -95.6" fill="none" stroke="url(#gauge)" stroke-width="22" stroke-linecap="round"/>
+    <line x1="0" y1="0" x2="100.2" y2="-82.9" stroke="#0F172A" stroke-width="9" stroke-linecap="round"/>
+    <circle cx="0" cy="0" r="11" fill="#0F172A"/>
+    <circle cx="0" cy="0" r="4" fill="#F8FAFC"/>
+    <text x="0" y="74" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="68" font-weight="700" fill="#0F172A">78</text>
+    <text x="0" y="116" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="600" letter-spacing="4" fill="#64748B">FAIRNESS SCORE</text>
+  </g>
+</svg>
